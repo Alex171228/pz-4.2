@@ -79,7 +79,7 @@ curl -i -X POST http://<SERVER_IP>:8082/v1/tasks \
 
 201 Created. В логах Tasks видно цепочку: calling auth HTTP verify → auth HTTP verify: success → token verified → task created → request completed. В логах Auth — token verified → request completed (200).
 
-<img width="1898" height="126" alt="image" src="https://github.com/user-attachments/assets/4c229940-2ec2-48ad-99dc-197300437c88" /> 
+![Успешный запрос — создание задачи](docs/images/3_1_success.png)
 
 
 ### 3.2. Запрос с ошибкой — невалидный токен
@@ -93,7 +93,7 @@ curl -i http://<SERVER_IP>:8082/v1/tasks \
 401 Unauthorized. В логах Tasks уровень `warn` — `auth HTTP verify: unauthorized`, `invalid token`. Токен не попадает в логи (только `has_auth: true`). В логах Auth — `token verification failed` (уровень `warn`).
 
 
-<img width="1904" height="300" alt="image" src="https://github.com/user-attachments/assets/3de613f4-9731-4856-8521-5ff4e3939d73" /> 
+![Запрос с невалидным токеном](docs/images/3_2_error.png)
 
 
 ### 3.3. Межсервисный вызов — корреляция по request-id
@@ -119,7 +119,7 @@ curl -i -X POST http://<SERVER_IP>:8082/v1/tasks \
 
 По `request_id: "pz19-011"` можно найти связанные события в логах обоих сервисов: Auth (`service: auth`, verify) и Tasks (`service: tasks`, task created).
 
-<img width="1899" height="407" alt="image" src="https://github.com/user-attachments/assets/02aebe24-4ba9-4a27-bdba-03332d343e5c" /> 
+![Корреляция request-id](docs/images/3_3_correlation.png)
 
 
 ---

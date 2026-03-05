@@ -1,0 +1,192 @@
+{
+	"info": {
+		"_postman_id": "pz3-structured-logging",
+		"name": "PZ3 — Structured Logging",
+		"description": "Коллекция для проверки структурированного логирования (zap). Отправляем запросы из Postman, логи смотрим в терминалах сервера.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "host",
+			"value": "localhost",
+			"description": "IP или домен сервера (например 123.45.67.89)"
+		},
+		{
+			"key": "auth_port",
+			"value": "8081"
+		},
+		{
+			"key": "tasks_port",
+			"value": "8082"
+		}
+	],
+	"item": [
+		{
+			"name": "3.1 Успешный запрос — создание задачи",
+			"item": [
+				{
+					"name": "Login (получить токен)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "pz19-001"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"student\",\n  \"password\": \"student\"\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:{{auth_port}}/v1/auth/login",
+							"protocol": "http",
+							"host": ["{{host}}"],
+							"port": "{{auth_port}}",
+							"path": ["v1", "auth", "login"]
+						},
+						"description": "Логин — получаем токен. В логах Auth видно request_id: pz19-001."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task (успешный)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer demo-token"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "pz19-002"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Logs\",\n  \"description\": \"Implement zap\",\n  \"due_date\": \"2026-01-12\"\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:{{tasks_port}}/v1/tasks",
+							"protocol": "http",
+							"host": ["{{host}}"],
+							"port": "{{tasks_port}}",
+							"path": ["v1", "tasks"]
+						},
+						"description": "Создание задачи с валидным токеном. Ожидаем 201.\nВ логах Tasks: gRPC verify → token verified → task created → request completed.\nВ логах Auth: verify request received → token verified."
+					},
+					"response": []
+				}
+			],
+			"description": "Успешный сценарий: логин + создание задачи. Статус 201, уровень info."
+		},
+		{
+			"name": "3.2 Ошибка — невалидный токен",
+			"item": [
+				{
+					"name": "Get Tasks (invalid token)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid-token"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "pz19-003"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{tasks_port}}/v1/tasks",
+							"protocol": "http",
+							"host": ["{{host}}"],
+							"port": "{{tasks_port}}",
+							"path": ["v1", "tasks"]
+						},
+						"description": "Запрос с невалидным токеном. Ожидаем 401.\nВ логах Tasks: уровень warn, has_auth: true, токен НЕ логируется.\nВ логах Auth: token verification failed."
+					},
+					"response": []
+				}
+			],
+			"description": "Ошибочный сценарий: невалидный токен → 401, уровень warn."
+		},
+		{
+			"name": "3.3 Межсервисный вызов — корреляция request-id",
+			"item": [
+				{
+					"name": "Login (request-id: pz19-010)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "pz19-010"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"student\",\n  \"password\": \"student\"\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:{{auth_port}}/v1/auth/login",
+							"protocol": "http",
+							"host": ["{{host}}"],
+							"port": "{{auth_port}}",
+							"path": ["v1", "auth", "login"]
+						},
+						"description": "Логин с request_id pz19-010. Видно в логах Auth."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task (request-id: pz19-011)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer demo-token"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "pz19-011"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Cross-service\",\n  \"description\": \"Test correlation\",\n  \"due_date\": \"2026-01-12\"\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:{{tasks_port}}/v1/tasks",
+							"protocol": "http",
+							"host": ["{{host}}"],
+							"port": "{{tasks_port}}",
+							"path": ["v1", "tasks"]
+						},
+						"description": "Создание задачи с request_id pz19-011.\nВ логах ОБОИХ сервисов видно pz19-011 — это подтверждает прокидывание request-id через gRPC."
+					},
+					"response": []
+				}
+			],
+			"description": "Межсервисная корреляция: один request-id виден в логах Auth и Tasks."
+		}
+	]
+}
