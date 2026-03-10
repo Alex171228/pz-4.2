@@ -53,7 +53,8 @@ Labels отсутствуют — одно глобальное значение
 curl -s http://<SERVER_IP>:8082/metrics | head -30
 ```
 
-<!-- Вставить скриншот: вывод /metrics (10-20 строк с http_requests_total, http_request_duration_seconds, http_in_flight_requests) -->
+<img width="947" height="495" alt="image" src="https://github.com/user-attachments/assets/36c00141-cd0f-40ce-bae6-8c0573eb54fb" /> 
+
 
 ---
 
@@ -101,7 +102,8 @@ sum(rate(http_requests_total[1m])) by (route)
 
 Показывает количество запросов в секунду с разбивкой по маршрутам.
 
-<!-- Вставить скриншот: панель RPS в Grafana -->
+<img width="488" height="475" alt="image" src="https://github.com/user-attachments/assets/c52bf110-07bc-4d17-b9b1-7fb36a4facff" /> 
+
 
 ### 4.2. Error Rate (4xx / 5xx)
 
@@ -113,7 +115,8 @@ sum(rate(http_requests_total{status=~"4..|5.."}[1m])) by (status)
 
 Показывает частоту ошибочных ответов с разбивкой по кодам (401, 404, 503...).
 
-<!-- Вставить скриншот: панель Errors в Grafana -->
+<img width="477" height="461" alt="image" src="https://github.com/user-attachments/assets/961c1d89-fcdf-4a09-ad42-e9d14a562f62" /> 
+
 
 ### 4.3. Latency p95
 
@@ -125,7 +128,8 @@ histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by 
 
 Показывает 95-й перцентиль задержки — время, в которое укладываются 95% запросов.
 
-<!-- Вставить скриншот: панель Latency p95 в Grafana -->
+<img width="480" height="464" alt="image" src="https://github.com/user-attachments/assets/096d8d40-b0d6-4b0f-a6f4-7678946e49d3" /> 
+
 
 ---
 
